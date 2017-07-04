@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "RunServer", "RunServer\RunServer.vbproj", "{FBCB99C1-6606-46A7-A044-63D175ED20BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E902B05-C6D4-4A39-BD2F-97863F9E8480} = {1E902B05-C6D4-4A39-BD2F-97863F9E8480}
+	EndProjectSection
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CmisServer", "CmisServer\CmisServer.vbproj", "{A61B1EC2-14F8-4C53-B853-D527D71E4A89}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E902B05-C6D4-4A39-BD2F-97863F9E8480} = {1E902B05-C6D4-4A39-BD2F-97863F9E8480}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xml-Templates", "Xml-Templates", "{F06F0C90-D0B9-4D2F-8914-E42A4F408F21}"
+	ProjectSection(SolutionItems) = preProject
+		Xml\cmis_document.xml = Xml\cmis_document.xml
+		Xml\cmis_folder.xml = Xml\cmis_folder.xml
+		Xml\document.xml = Xml\document.xml
+		Xml\folder.xml = Xml\folder.xml
+	EndProjectSection
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WebServer", "WebServer\WebServer.vbproj", "{B58968A0-D8B3-4504-A8F7-9A70E3900625}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CmisObjectModel", "..\..\CmisObjectModel\CmisObjectModel.vbproj", "{1E902B05-C6D4-4A39-BD2F-97863F9E8480}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FBCB99C1-6606-46A7-A044-63D175ED20BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBCB99C1-6606-46A7-A044-63D175ED20BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBCB99C1-6606-46A7-A044-63D175ED20BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCB99C1-6606-46A7-A044-63D175ED20BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A61B1EC2-14F8-4C53-B853-D527D71E4A89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A61B1EC2-14F8-4C53-B853-D527D71E4A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A61B1EC2-14F8-4C53-B853-D527D71E4A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A61B1EC2-14F8-4C53-B853-D527D71E4A89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B58968A0-D8B3-4504-A8F7-9A70E3900625}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B58968A0-D8B3-4504-A8F7-9A70E3900625}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B58968A0-D8B3-4504-A8F7-9A70E3900625}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B58968A0-D8B3-4504-A8F7-9A70E3900625}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E902B05-C6D4-4A39-BD2F-97863F9E8480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E902B05-C6D4-4A39-BD2F-97863F9E8480}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E902B05-C6D4-4A39-BD2F-97863F9E8480}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E902B05-C6D4-4A39-BD2F-97863F9E8480}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
