@@ -1,0 +1,872 @@
+####################################################################################################
+##
+## Content Management Interoperability Services (CMIS) 1.1 - Browser Binding Schema
+##
+####################################################################################################
+
+####################################################################################################
+##
+##
+##     Content Management Interoperability Services (CMIS) Version 1.1
+##     OASIS Standard
+##     23 May 2013
+##     Copyright (c) OASIS Open 2013. All Rights Reserved.
+##     Source: http://docs.oasis-open.org/cmis/CMIS/v1.1/os/schema/
+##     
+####################################################################################################
+
+####################################################################################################
+# Repository Info
+###################################################################################################
+
+
+map { // repository id -> repository info
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/repositories";
+    string => ref "http://docs.oasis-open.org/ns/cmis/browser/201103/repositoryInfo"
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/repositoryInfo";
+    string repositoryId;
+    string repositoryName;
+    string repositoryDescription;
+    string vendorName;
+    string productName;
+    string productVersion;
+    string repositoryUrl;
+    string rootFolderId;
+    string rootFolderUrl; // Browser Binding specific
+    string latestChangeLogToken?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/repositoryCapabilities" capabilities;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ACLcapabilities" aclCapabilities?;
+    string cmisVersionSupported = "1.1";
+    string thinClientURI?; // URI
+    boolean changesIncomplete?;
+    array { string 
+        [ "cmis:document", "cmis:folder", "cmis:relationship", "cmis:policy", "cmis:item" ]
+        } changesOnType?;
+    string principalIdAnonymous?;
+    string principalIdAnyone?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/extendedFeatures" } extendedFeatures?;
+}*; 
+
+ 
+object {                                     
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/repositoryCapabilities";
+    string  capabilityACL ["none", "discover", "manage"];
+    boolean capabilityAllVersionsSearchable;
+    string  capabilityChanges [ "none", "objectidsonly", "properties", "all" ];
+    string  capabilityContentStreamUpdatability [ "anytime", "pwconly", "none" ];
+    boolean capabilityGetDescendants;
+    boolean capabilityGetFolderTree;
+    string  capabilityOrderBy [ "none", "common", "custom" ];
+    boolean capabilityMultifiling;
+    boolean capabilityPWCSearchable;
+    boolean capabilityPWCUpdatable;
+    string  capabilityQuery [ "none", "metadataonly", "fulltextonly", "bothseparate", "bothcombined" ];
+    string  capabilityRenditions [ "none", "read" ];
+    boolean capabilityUnfiling;
+    boolean capabilityVersionSpecificFiling;
+    string  capabilityJoin [ "none", "inneronly", "innerandouter" ];
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/capabilityCreatablePropertyTypes" capabilityCreatablePropertyTypes?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/capabilityNewTypeSettableAttributes" capabilityNewTypeSettableAttributes?;
+}*;
+
+
+object {                                     
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/capabilityCreatablePropertyTypes";
+    array { string [
+    	"boolean",
+    	"id",
+		"integer",
+		"datetime",
+		"decimal",
+		"html",
+		"string",
+		"uri"
+		] } canCreate;
+}*;
+
+
+object {                                     
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/capabilityNewTypeSettableAttributes";
+    boolean id;
+    boolean localName;
+    boolean localNamespace;
+    boolean displayName;
+    boolean queryName;
+    boolean description;
+    boolean creatable;
+    boolean fileable;
+    boolean queryable;
+    boolean fulltextIndexed;
+    boolean includedInSupertypeQuery;
+    boolean controllablePolicy;
+    boolean controllableACL;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ACLcapabilities";
+    string supportedPermissions [ "basic", "repository", "both" ];
+    string propagation [ "repositorydetermined", "objectonly", "propagate" ];
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/permissionDefinition" } {1,} permissions;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/permissionMapping" } mapping?;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/permissionDefinition";
+    string permission;
+    string description?;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/permissionMapping";
+    string key [
+                   "canGetDescendents.Folder",
+                   "canGetChildren.Folder",
+                   "canGetParents.Folder",
+                   "canGetFolderParent.Object",
+                   "canCreateDocument.Folder",
+                   "canCreateFolder.Folder",
+                   "canCreateRelationship.Source",
+                   "canCreateRelationship.Target",
+                   "canGetProperties.Object",
+                   "canViewContent.Object",
+                   "canUpdateProperties.Object",
+                   "canMove.Object",
+                   "canMove.Target",
+                   "canMove.Source",
+                   "canDelete.Object",
+                   "canDeleteTree.Folder",
+                   "canSetContent.Document",
+                   "canDeleteContent.Document",
+                   "canAddToFolder.Object",
+                   "canAddToFolder.Folder",
+                   "canRemoveFromFolder.Object",
+                   "canRemoveFromFolder.Folder",
+                   "canCheckout.Document",
+                   "canCancelCheckout.Document",
+                   "canCheckin.Document",
+                   "canGetAllVersions.VersionSeries",
+                   "canGetObjectRelationships.Object",
+                   "canAddPolicy.Object",
+                   "canAddPolicy.Policy",
+                   "canRemovePolicy.Object",
+                   "canRemovePolicy.Policy",
+                   "canGetAppliedPolicies.Object",
+                   "canGetACL.Object",
+                   "canApplyACL.Object"
+                   ];
+    array { string } {1,} permission;
+}*; 
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/extendedFeatures";
+    string id;
+    string url?; // URL
+    string commonName?;
+    string versionLabel?;
+    string description?;
+	map { string => string } featureData?;
+}*;
+
+
+####################################################################################################
+# Objects
+####################################################################################################
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/object";
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/properties"          properties?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/succinctProperties"  succinctProperties?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertiesExtension" propertiesExtension?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/allowableActions"    allowableActions?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/object" }    relationships?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/changeEvent"         changeEventInfo?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/acl"                 acl?;
+    boolean                                                                     exactACL?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ids"                 policyIds?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/rendition" } renditions?;
+}*;
+
+
+map { // property id -> property
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/properties";
+    string => 
+        union {
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyString";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyBoolean";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDecimal";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyInteger";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDateTime";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyUri";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyId";
+            ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyHtml"
+        };  
+};
+
+
+map { // property id -> property value
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/succinctProperties";
+    string => 
+        union {
+            null;
+            boolean;
+            string;
+            integer;
+            number;
+            array { boolean; string; integer; number; }
+        };
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertiesExtension";
+}*;
+
+
+object { 
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/allowableActions";
+    boolean canDeleteObject?;              
+    boolean canUpdateProperties?;          
+    boolean canGetFolderTree?;             
+    boolean canGetProperties?;             
+    boolean canGetObjectRelationships?;    
+    boolean canGetObjectParents?;          
+    boolean canGetFolderParent?;           
+    boolean canGetDescendants?;            
+    boolean canMoveObject?;                
+    boolean canDeleteContentStream?;       
+    boolean canCheckOut?;                  
+    boolean canCancelCheckOut?;            
+    boolean canCheckIn?;                   
+    boolean canSetContentStream?;          
+    boolean canGetAllVersions?;            
+    boolean canAddObjectToFolder?;         
+    boolean canRemoveObjectFromFolder?;    
+    boolean canGetContentStream?;          
+    boolean canApplyPolicy?;               
+    boolean canGetAppliedPolicies?;        
+    boolean canRemovePolicy?;              
+    boolean canGetChildren?;               
+    boolean canCreateDocument?;            
+    boolean canCreateFolder?;              
+    boolean canCreateRelationship?;        
+    boolean canDeleteTree?;                
+    boolean canGetRenditions?;             
+    boolean canGetACL?;                    
+    boolean canApplyACL?;
+}*;
+
+
+object {
+	id "http://docs.oasis-open.org/ns/cmis/browser/201103/changeEvent";
+    string changeType [ "created", "updated", "deleted", "security" ];
+    integer changeTime; // dateTime
+}*;
+ 
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/acl";
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ace" } aces;
+    boolean isExact?;
+}*;
+ 
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ace";
+    object {
+		string principalId;
+    }* principal;
+    array { string } {1,} permissions;
+    boolean isDirect;
+}*;
+ 
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/rendition";
+    string streamId;
+    string mimeType;
+    integer length;
+    string kind;
+    string title?;
+    integer height?;
+    integer width?;
+    string renditionDocumentId?;
+}*;
+
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyBoolean";
+    string propertyDefinitionId;
+    string type = "boolean";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        boolean;
+        array { boolean }
+    } value;
+}*;
+
+  
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyId";
+    string propertyDefinitionId;
+    string type = "id";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        string;
+        array { string }
+    } value;
+}*;    
+
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyInteger";
+    string propertyDefinitionId;
+    string type = "integer";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        integer;
+        array { integer }
+    } value;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDateTime";
+    string propertyDefinitionId;
+    string type = "datetime";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        integer; // dateTime
+        array { integer } // dateTime
+    } value;
+};
+
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDecimal";
+    string propertyDefinitionId;
+    string type = "decimal";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        number;
+        array { number }
+    } value;
+}*;
+
+  
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyHtml";
+    string propertyDefinitionId;
+    string type = "html";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        string;
+        array { string }
+    } value;
+}*;
+
+    
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyString";
+    string propertyDefinitionId;
+    string type = "string";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        string;
+        array { string }
+    } value;
+}*;
+
+   
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyUri";
+    string propertyDefinitionId;
+    string type = "uri";
+    string cardinality [ "single", "multi" ];
+    string localName?;
+    string displayName?;
+    string queryName?;
+    union {
+        null;
+        string;
+        array { string }
+    } value;
+}*;
+
+ 
+####################################################################################################
+# Object Sets (lists and trees)
+####################################################################################################
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/objectList";
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/object" } objects;
+    boolean hasMoreItems;
+    integer numItems?;
+    string changeLogToken?;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/objectInFolder";
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/object" object;
+    string pathSegment?;
+}*;
+ 
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/objectInFolderList";
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/objectInFolder" } objects;
+    boolean hasMoreItems;
+    integer numItems?;
+}*;
+
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/objectContainer";
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/objectInFolder" object;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/objectContainer" } children?;
+}*;
+
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/objectParent";
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/object" object;
+    string relativePathSegment?;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ids";
+    array { string } {1,} ids;
+};
+
+
+####################################################################################################
+# Type Definitions
+####################################################################################################
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+    string id;
+    string localName;
+    string localNamespace?; // URI
+    string displayName?;
+    string queryName?;
+    string description?;
+    string baseId [ "cmis:document", "cmis:folder", "cmis:relationship", "cmis:policy", "cmis:item", "cmis:secondary" ];
+    string parentId?; // MUST NOT be set for base types but MUST be set for all other types
+    boolean creatable;
+    boolean fileable;
+    boolean queryable;
+    boolean fulltextIndexed;
+    boolean includedInSupertypeQuery;
+    boolean controllablePolicy;
+    boolean controllableACL;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/typeMutability" typeMutability?;
+    map { // property id -> property definition
+        string =>
+            union {
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyStringDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyBooleanDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDecimalDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyIdDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDateTimeDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyUriDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyIdDefinitionType";
+                ref "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyHtmlDefinitionType"
+            };
+    } propertyDefinitions;
+}*;
+
+
+object {
+	id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeMutability";
+	boolean create;
+	boolean update;
+	boolean delete;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDocumentDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+    boolean versionable;
+    string  contentStreamAllowed [ "notallowed", "allowed", "required" ];
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeFolderDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeRelationshipDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+    array { string } allowedSourceTypes;
+    array { string } allowedTargetTypes;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typePolicyDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeItemDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeSecondaryDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType";
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    string  id;
+    string  localName;
+    string  localNamespace?;
+    string  displayName?;
+    string  queryName?;
+    string  description?;
+    string  propertyType [ "string", "boolean", "decimal", "integer", "datetime", "uri", "id", "html" ];
+    string  cardinality [ "single", "multi" ];
+    string  updatability ["readonly", "readwrite", "whencheckedout", "oncreate" ];
+    boolean inherited;
+    boolean required;
+    boolean queryable;
+    boolean orderable;
+    boolean openChoice?;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyStringDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    integer maxLength?;    
+    union {
+        string;
+        array { string }
+    } defaultValue?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceString" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceString";
+    string displayName;
+    union {
+        string;
+        array { string }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceString" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyBooleanDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";  
+    union {
+        boolean;
+        array { boolean }
+    } defaultValue?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceBoolean" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceBoolean";
+    string displayName;
+    union {
+        boolean;
+        array { boolean }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceBoolean" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDecimalDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    number minValue?;
+    number maxValue?;
+    string precision [ "32", "64" ]?;
+    union {
+        number;
+        array { number }
+    } defaultValue?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceDecimal" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceDecimal";
+    string displayName;
+    union {
+        number;
+        array { number }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceDecimal" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyIntegerDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    integer minValue?;
+    integer maxValue?;
+    union {
+        integer;
+        array { integer }
+    } defaultValue?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceInteger" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceInteger";
+    string displayName;
+    union {
+        integer;
+        array { integer }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceInteger" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDateTimeDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    string resolution [ "year", "date", "time" ];
+    union {
+        integer;
+        array { integer }
+    } defaultValue?;  // dateTime
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceDateTime" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceDateTime";
+    string displayName;
+    union {
+        integer;
+        array { integer }
+    } value?;  // dateTime
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceDateTime" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyUriDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    union {
+        string;
+        array { string }
+    } defaultValue?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceUri" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceUri";
+    string displayName;
+    union {
+        string;
+        array { string }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceUri" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyIdDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    union {
+        string;
+        array { string }
+    } defaultValue?;
+    array {  ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceId" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceId";
+    string displayName;
+    union {
+        string;
+        array { string }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceId" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyHtmlDefinitionType";
+    base "http://docs.oasis-open.org/ns/cmis/browser/201103/propertyDefinitionType";
+    union {
+        string;
+        array { string }
+    } defaultValue?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceHtml" } choice?;
+};
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceHtml";
+    string displayName;
+    union {
+        string;
+        array { string }
+    } value?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/ChoiceHtml" } choice?;
+};
+
+
+####################################################################################################
+# Type Sets (lists and trees)
+####################################################################################################
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeList";
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType" } types;
+    boolean hasMoreItems;
+    integer numItems?;
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/typeContainer";
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/typeDefinitionType" type;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/typeContainer" } children?;
+}*;
+
+
+####################################################################################################
+# Bulk Update
+####################################################################################################
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/objectIdAndChangeToken";
+	string id;
+	string newId?;
+	string changeToken?;
+}*;
+
+
+####################################################################################################
+# Query Results
+####################################################################################################
+
+object {
+	id "http://docs.oasis-open.org/ns/cmis/browser/201103/queryResultList";
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/queryResult" } results;
+    boolean hasMoreItems;
+    integer numItems?;
+}*;
+
+  
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/queryResult";
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/queryProperties"         properties?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/succinctQueryProperties" succinctProperties?;
+    ref "http://docs.oasis-open.org/ns/cmis/browser/201103/allowableActions"        allowableActions?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/object" }        relationships?;
+    array { ref "http://docs.oasis-open.org/ns/cmis/browser/201103/rendition" }     renditions?;
+}*;
+
+ 
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/queryProperties";
+    map { // query name or alias -> property
+        string => ref "http://docs.oasis-open.org/ns/cmis/browser/201103/queryProperty";
+    };
+}*;
+
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/queryProperty";
+    string propertyDefinitionId?;
+    string type;
+    string localName?;
+    string displayName?;
+    string queryName;  // or alias
+    union {
+        null;
+        boolean;
+        string;
+        integer;
+        number;
+        array { boolean; string; integer; number; }
+    } value;
+}*; 
+
+
+map { // query name or alias -> property value
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/succinctQueryProperties";
+    string => 
+        union {
+            null;
+            boolean;
+            string;
+            integer;
+            number;
+            array { boolean; string; integer; number; }
+        };
+};
+
+
+####################################################################################################
+# Transaction
+####################################################################################################
+
+object {
+    id "http://docs.oasis-open.org/ns/cmis/browser/201103/transaction";
+    int code;
+    union { string; null } objectId;
+    union { string; null } exception;    
+    union { string; null } message;
+}*;
+
