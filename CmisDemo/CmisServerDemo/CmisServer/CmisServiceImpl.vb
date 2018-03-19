@@ -272,7 +272,7 @@ Partial Public Class CmisServiceImpl
    Protected Overrides Function GetObjectByPath(repositoryId As String, path As String, filter As String, includeAllowableActions As Boolean?, includePolicyIds As Boolean?, includeRelationships As enumIncludeRelationships?, includeACL As Boolean?, renditionFilter As String) As Result(Of CmisObjectModel.ServiceModel.cmisObjectType)
       Log_Internal("GetObjectByPath", path)
 
-      Dim objectId As String = path.Substring(1).Replace("/", "\")
+      Dim objectId As String = If("/".Equals(path) OrElse String.IsNullOrEmpty(path), "root", path.Substring(1).Replace("/", "\"))
 
       Return Object_Internal(objectId)
    End Function
