@@ -10,6 +10,7 @@ Partial Public Class CmisServiceImpl
    Shared _reponame As String = Configuration.ConfigurationManager.AppSettings("reponame")
    Shared _folder As String = Configuration.ConfigurationManager.AppSettings("folder")
    Shared _errorfile As String = Configuration.ConfigurationManager.AppSettings("errorfile")
+   Shared _logfile As String = Configuration.ConfigurationManager.AppSettings("logfile")
 
    Shared _repository As cmisRepositoryInfoType = Nothing
 
@@ -26,15 +27,23 @@ Partial Public Class CmisServiceImpl
 #Region "Logging and Errors"
 
    Sub Log_Internal(ParamArray values As String())
-      InMemoryLogQueue.Enqueue("LOG   | " & Format(values))
+      Dim line As String = "LOG   | " & Format(values)
+      SyncLock _logfile
+         System.IO.File.AppendAllText(_logfile, line & vbcrlf)
+      End SyncLock
+      SyncLock InMemoryLogQueue
+         InMemoryLogQueue.Enqueue(line)
+      End SyncLock
    End Sub
 
    Sub ErrorLog_Internal(ParamArray values As String())
-      Dim text As String = Format(values)
-      InMemoryLogQueue.Enqueue("ERROR | " & text)
-      If Not text.Contains("Not Found") Then
-         IO.File.AppendAllText(_errorfile, text & vbCrLf)
-      End If
+      Dim line As String = "ERROR | " & Format(values)
+      SyncLock InMemoryLogQueue
+         InMemoryLogQueue.Enqueue(line)
+      End SyncLock
+      SyncLock _logfile
+         System.IO.File.AppendAllText(_logfile, line & vbcrlf)
+      End SyncLock
    End Sub
 
    Function Format(ParamArray values As String()) As String
@@ -490,6 +499,8 @@ Partial Public Class CmisServiceImpl
       Return objectId.Replace(";pwc", String.Empty)
    End Function
 
+   Shared FileEccessSyncObject As New Object
+
    Sub CancelCheckOut_Internal(objectId As String)
       Dim meta As Metadata = DocumentMetadata_Internal(objectId)
 
@@ -504,7 +515,7 @@ Partial Public Class CmisServiceImpl
          'Hier wird anhand des Kommentars erkannt, dass ein Dokument mit dem Status "checkedout" erzeugt wurde.
          'Mit dem CancelCheckOut muss dann hier auch die eingecheckte Version gelöscht werden.
          '(Siehe auch CmisService.CreateDocument)
-         IO.File.Delete(path)
+         IO.Directory.Delete(path, True)
       Else
 
          Dim pathVersionen As String = IO.Path.Combine(_folder, versionSeriesId, "Versionen")

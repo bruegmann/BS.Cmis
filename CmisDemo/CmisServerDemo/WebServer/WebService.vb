@@ -5,6 +5,7 @@ Public Class WebService
    Shared _folder As String = Configuration.ConfigurationManager.AppSettings("folder")
 
    Public Function ShowObject(objectId As String) As IO.Stream Implements IWebService.ShowObject
+      If String.IsNullOrWhiteSpace(objectId) OrElse "{0}".Equals(objectId) Then objectId = "root"
 
       Dim pos As Integer = objectId.LastIndexOf(";"c)
       Dim versionSeriesId As String = If(pos < 0, objectId, objectId.Substring(0, pos))
@@ -30,6 +31,8 @@ Public Class WebService
             & "Serie<ul><li><a href=""obj?id=" & versionSeriesId & """>" & versionSeriesId & "</a>"
       Else
          'Folder
+
+         If "root".Equals(versionSeriesId) Then versionSeriesId = String.Empty
 
          Dim subfolders = From folder As String In IO.Directory.EnumerateDirectories(IO.Path.Combine(_folder, versionSeriesId))
                           Where Not IO.File.Exists(IO.Path.Combine(folder, "metadata"))

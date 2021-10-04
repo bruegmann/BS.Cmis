@@ -478,6 +478,8 @@ Namespace CmisObjectModel.Client.Base
                   System.Runtime.Caching.MemoryCache.Default.Remove(key)
                   If value IsNot Nothing Then
                      System.Runtime.Caching.MemoryCache.Default.Add(key, value, DateTimeOffset.Now.AddSeconds(AppSettings.CacheLeaseTime))
+                  Else
+                     System.Runtime.Caching.MemoryCache.Default.Remove(key)
                   End If
                End SyncLock
             End Set

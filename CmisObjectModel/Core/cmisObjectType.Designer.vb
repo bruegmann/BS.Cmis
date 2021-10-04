@@ -44,6 +44,7 @@ Namespace CmisObjectModel.Core
 
       Public Sub New()
          MyBase.New(CType(True, Boolean?))
+         _properties = New Collections.cmisPropertiesType()
       End Sub
       ''' <summary>
       ''' this constructor is only used if derived classes from this class needs an InitClass()-call
@@ -52,6 +53,7 @@ Namespace CmisObjectModel.Core
       ''' <remarks></remarks>
       Protected Sub New(initClassSupported As Boolean?)
          MyBase.New(initClassSupported)
+         _properties = New Collections.cmisPropertiesType()
       End Sub
 
 #Region "IXmlSerializable"
@@ -81,7 +83,7 @@ Namespace CmisObjectModel.Core
       ''' <param name="reader"></param>
       ''' <remarks></remarks>
       Protected Overrides Sub ReadXmlCore(reader As sx.XmlReader, attributeOverrides As Serialization.XmlAttributeOverrides)
-         _properties = Read(Of Core.Collections.cmisPropertiesType)(reader, attributeOverrides, "properties", Constants.Namespaces.cmis, AddressOf GenericXmlSerializableFactory(Of Core.Collections.cmisPropertiesType))
+         _properties = If(Read(Of Core.Collections.cmisPropertiesType)(reader, attributeOverrides, "properties", Constants.Namespaces.cmis, AddressOf GenericXmlSerializableFactory(Of Core.Collections.cmisPropertiesType)), New Collections.cmisPropertiesType())
          _allowableActions = Read(Of Core.cmisAllowableActionsType)(reader, attributeOverrides, "allowableActions", Constants.Namespaces.cmis, AddressOf GenericXmlSerializableFactory(Of Core.cmisAllowableActionsType))
          _relationships = ReadArray(Of Core.cmisObjectType)(reader, attributeOverrides, "relationship", Constants.Namespaces.cmis, AddressOf GenericXmlSerializableFactory(Of Core.cmisObjectType))
          _changeEventInfo = Read(Of Core.cmisChangeEventType)(reader, attributeOverrides, "changeEventInfo", Constants.Namespaces.cmis, AddressOf GenericXmlSerializableFactory(Of Core.cmisChangeEventType))
@@ -186,7 +188,15 @@ Namespace CmisObjectModel.Core
          Set(value As Core.Collections.cmisPropertiesType)
             If value IsNot _properties Then
                Dim oldValue As Core.Collections.cmisPropertiesType = _properties
-               _properties = value
+               If oldValue IsNot Nothing Then
+                  RemoveHandler oldValue.PropertyChanged, AddressOf xmlSerializable_PropertyChanged
+               End If
+               If value Is Nothing Then
+                  _properties = New Collections.cmisPropertiesType()
+               Else
+                  _properties = value
+               End If
+               AddHandler _properties.PropertyChanged, AddressOf xmlSerializable_PropertyChanged
                OnPropertyChanged("Properties", value, oldValue)
             End If
          End Set

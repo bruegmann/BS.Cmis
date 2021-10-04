@@ -31,7 +31,7 @@ Namespace CmisObjectModel.ServiceModel.Generic
    ''' of this cmis framework
    ''' </summary>
    ''' <remarks>
-   ''' Creates TServiceImpl when needed. The build-in mechanism searches in the AppSettings
+   ''' Creates TServiceImpl when needed. The built-in mechanism searches in the AppSettings
    ''' for a given ProviderDllPath, loads this dll and searches for a class inherited from/
    ''' implementing the TServiceImpl with a constructor taking an uri parameter. To avoid
    ''' reflection set the CustomInstanceFactory property.

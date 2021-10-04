@@ -121,6 +121,8 @@ Namespace CmisObjectModel.Client
                         Dim descriptionProperty As Core.Properties.cmisPropertyString =
                            retVal.Object.Properties.FindProperty(Of Core.Properties.cmisPropertyString)(CmisPredefinedPropertyNames.Description)
                         If descriptionProperty IsNot Nothing Then retVal.UpdateProperties(New Core.Collections.cmisPropertiesType(descriptionProperty))
+                        'bind to the PWCRemovedListeners
+                        retVal.AddPWCRemovedListeners()
                      End If
 
                      Return retVal

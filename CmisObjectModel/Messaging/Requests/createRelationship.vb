@@ -55,7 +55,7 @@ Namespace CmisObjectModel.Messaging.Requests
          If value Is Nothing OrElse value._properties Is Nothing Then
             Return Nothing
          Else
-            Dim cmisraObject As New Core.cmisObjectType(value._properties.Properties)
+            Dim cmisraObject As New Core.cmisObjectType(value._properties)
 
             If value._policies IsNot Nothing AndAlso value._policies.Length > 0 Then
                cmisraObject.PolicyIds = New Core.Collections.cmisListOfIdsType() With {.Ids = value._policies}

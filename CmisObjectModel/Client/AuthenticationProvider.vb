@@ -47,6 +47,20 @@ Namespace CmisObjectModel.Client
          _cookies = New sn.CookieContainer()
       End Sub
 
+      ''' <summary>
+      ''' Creates a secure NtlmAuthenticationProvider if the password only contains digits and letters.
+      ''' Otherwise it creates a AuthenticationProvider to prevent problems with special characters.
+      ''' </summary>
+      ''' <param name="user"></param>
+      ''' <param name="password"></param>
+      ''' <returns></returns>
+      Public Shared Shadows Function CreateInstance(user As String, password As System.Security.SecureString) As AuthenticationProvider
+         For Each ch As Char In PasswordToCharArray(password)
+            If Not Char.IsLetterOrDigit(ch) Then Return New AuthenticationProvider(user, password)
+         Next
+         Return New NtlmAuthenticationProvider(user, password)
+      End Function
+
 #Region "Authentication"
       Public Sub Authenticate(portOrRequest As Object)
          If TypeOf portOrRequest Is sn.HttpWebRequest Then

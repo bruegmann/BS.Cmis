@@ -1,4 +1,4 @@
-﻿Imports System
+Imports System
 Imports System.Reflection
 Imports System.Runtime.InteropServices
 
@@ -29,7 +29,7 @@ Imports System.Runtime.InteropServices
 '
 ' Sie können alle Werte angeben oder die standardmäßigen Build- und Revisionsnummern 
 ' übernehmen, indem Sie "*" eingeben:
-' <Assembly: AssemblyVersion("1.0.*")> 
+' <Assembly: AssemblyVersion("6.4.0")> 
 
-<Assembly: AssemblyVersion("1.0.0.0")>
-<Assembly: AssemblyFileVersion("1.0.0.0")>
+<Assembly: AssemblyVersion("6.4.0")>
+<Assembly: AssemblyFileVersion("6.4.0.0")>

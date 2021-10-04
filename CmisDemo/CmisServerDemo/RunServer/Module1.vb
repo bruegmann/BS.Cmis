@@ -34,6 +34,11 @@ Module Module1
 
       Console.WriteLine()
 
+      Console.WriteLine("Weitere Eigenschaften")
+      Console.WriteLine(" - RepositoryId: " & Configuration.ConfigurationManager.AppSettings("repoid"))
+      Console.WriteLine(" - ObjectId des Root-Folders: root")
+      Console.WriteLine()
+
       'Web-Service
       ' ' ' ' ' ' '
       Console.WriteLine("Web-Service (URL-Templates)")
@@ -53,18 +58,26 @@ Module Module1
       Console.WriteLine()
 
       While True
-         Threading.Thread.Sleep(100)
-
-         While CmisServer.CmisServiceImpl.InMemoryLogQueue.Count > 0
-            Dim text As String = CmisServer.CmisServiceImpl.InMemoryLogQueue.Dequeue
-            If text.StartsWith("ERROR") Then
-               WriteLineInColor(ConsoleColor.Red, text)
-            ElseIf text.Contains("Check") OrElse text.Contains("Create") OrElse text.Contains("Delete") OrElse text.Contains("Properties") OrElse text.Contains("Content") Then
-               WriteLineInColor(ConsoleColor.Yellow, text)
-            Else
-               Console.WriteLine(text)
+         If Console.KeyAvailable Then
+            Dim key As Char = Console.ReadKey(False).KeyChar
+            If key = vbCr Then
+               Console.WriteLine(vbLf & New String("-", Console.WindowWidth - 1))
             End If
-         End While
+         End If
+         Threading.Thread.Sleep(100)
+         SyncLock CmisServer.CmisServiceImpl.InMemoryLogQueue
+            While CmisServer.CmisServiceImpl.InMemoryLogQueue.Count > 0
+               Dim text As String = CmisServer.CmisServiceImpl.InMemoryLogQueue.Dequeue
+
+               If text.StartsWith("ERROR") Then
+                  WriteLineInColor(ConsoleColor.Red, text)
+               ElseIf text.Contains("Check") OrElse text.Contains("Create") OrElse text.Contains("Delete") OrElse text.Contains("Properties") OrElse text.Contains("Content") Then
+                  WriteLineInColor(ConsoleColor.Yellow, text)
+               Else
+                  Console.WriteLine(text)
+               End If
+            End While
+         End SyncLock
 
       End While
 

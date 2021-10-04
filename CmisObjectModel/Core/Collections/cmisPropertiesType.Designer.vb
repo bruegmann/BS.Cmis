@@ -23,10 +23,11 @@
 '* If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 '***********************************************************************************************************************
 Imports CmisObjectModel.Common
+Imports CmisObjectModel.Core.Properties
 Imports sx = System.Xml
 Imports sxs = System.Xml.Serialization
 'depends on the chosen interpretation of the xs:integer expression in a xsd-file
-#If xs_Integer = "Int32" OrElse xs_integer = "Integer" OrElse xs_integer = "Single" Then
+#If xs_Integer = "Int32" OrElse xs_Integer = "Integer" OrElse xs_Integer = "Single" Then
 Imports xs_Integer = System.Int32
 #Else
 Imports xs_Integer = System.Int64
@@ -81,7 +82,7 @@ Namespace CmisObjectModel.Core.Collections
       ''' <param name="reader"></param>
       ''' <remarks></remarks>
       Protected Overrides Sub ReadXmlCore(reader As sx.XmlReader, attributeOverrides As Serialization.XmlAttributeOverrides)
-         _properties = ReadArray(Of Core.Properties.cmisProperty)(reader, attributeOverrides, Nothing, AddressOf Core.Properties.cmisProperty.CreateInstance)
+         _properties = New HashSet(Of cmisProperty)(ReadArray(Of Core.Properties.cmisProperty)(reader, attributeOverrides, Nothing, AddressOf Core.Properties.cmisProperty.CreateInstance), New cmisPropertyEqualityComparer())
          _extensions = ReadArray(Of CmisObjectModel.Extensions.Extension)(reader, attributeOverrides, Nothing, AddressOf CmisObjectModel.Extensions.Extension.CreateInstance)
       End Sub
 
@@ -91,7 +92,7 @@ Namespace CmisObjectModel.Core.Collections
       ''' <param name="writer"></param>
       ''' <remarks></remarks>
       Protected Overrides Sub WriteXmlCore(writer As sx.XmlWriter, attributeOverrides As Serialization.XmlAttributeOverrides)
-         WriteArray(writer, attributeOverrides, Nothing, Constants.Namespaces.cmis, _properties)
+         WriteArray(writer, attributeOverrides, Nothing, Constants.Namespaces.cmis, _properties.ToArray())
          WriteArray(writer, attributeOverrides, Nothing, Constants.Namespaces.cmis, _extensions)
       End Sub
 #End Region
@@ -109,20 +110,77 @@ Namespace CmisObjectModel.Core.Collections
             End If
          End Set
       End Property 'Extensions
-
-      Protected _properties As Core.Properties.cmisProperty()
+      Private _equalityComparer As New cmisPropertyEqualityComparer()
+      Protected _properties As New HashSet(Of Core.Properties.cmisProperty)(_equalityComparer)
       Public Overridable Property Properties As Core.Properties.cmisProperty()
          Get
-            Return _properties
+            Return _properties.ToArray()
          End Get
          Set(value As Core.Properties.cmisProperty())
-            If value IsNot _properties Then
-               Dim oldValue As Core.Properties.cmisProperty() = _properties
-               _properties = value
-               OnPropertyChanged("Properties", value, oldValue)
+            If value Is Nothing Then
+               Dim oldValue As Properties.cmisProperty() = _properties.ToArray()
+               _properties.Clear()
+               OnPropertyChanged("Properties", _properties.ToArray(), oldValue)
+            End If
+            If _properties.Count <> value.Count OrElse Not _properties.All(Function(e) value.Contains(e)) Then
+               Dim oldValue As Core.Properties.cmisProperty() = _properties.ToArray()
+               _properties = New HashSet(Of cmisProperty)(value, _equalityComparer)
+               OnPropertyChanged("Properties", _properties.ToArray(), oldValue)
             End If
          End Set
       End Property 'Properties
 
+      Public Function AddProperty(p As Properties.cmisProperty) As Boolean
+         If p Is Nothing Then Return False
+         Dim oldValue As Properties.cmisProperty() = _properties.ToArray()
+         If _properties.Add(p) Then
+            OnPropertyChanged("Properties", _properties.ToArray(), oldValue)
+            Return True
+         End If
+         Return False
+      End Function
+
+      Public Function RemoveProperty(p As Properties.cmisProperty) As Boolean
+         If p Is Nothing Then Return False
+         Dim oldValue As Properties.cmisProperty() = _properties.ToArray()
+         If _properties.Remove(p) Then
+            OnPropertyChanged("Properties", _properties.ToArray(), oldValue)
+            Return True
+         End If
+         Return False
+      End Function
+
+      Public Function Contains(p As Properties.cmisProperty) As Boolean
+         Return _properties.Contains(p)
+      End Function
+      Private Shared _defaultProperty As Properties.cmisProperty = New cmisPropertyString()
+      Public Function GetByPropertyDefinitionId(propertyDefinitionId As String) As Properties.cmisProperty
+         SyncLock _defaultProperty
+            _defaultProperty.PropertyDefinitionId = propertyDefinitionId
+            Dim p As Properties.cmisProperty = Nothing
+            _properties.TryGetValue(_defaultProperty, p)
+            Return p
+         End SyncLock
+      End Function
+      Public Sub Clear()
+         Dim oldValue As Properties.cmisProperty() = _properties.ToArray()
+         _properties.Clear()
+         OnPropertyChanged("Properties", _properties.ToArray(), oldValue)
+      End Sub
+
+
+#Region "helper classes"
+      Private Class cmisPropertyEqualityComparer
+         Implements IEqualityComparer(Of Core.Properties.cmisProperty)
+
+         Public Shadows Function Equals(x As cmisProperty, y As cmisProperty) As Boolean Implements IEqualityComparer(Of cmisProperty).Equals
+            Return x IsNot Nothing AndAlso y IsNot Nothing AndAlso x.PropertyDefinitionId.Equals(y.PropertyDefinitionId)
+         End Function
+
+         Public Shadows Function GetHashCode(obj As cmisProperty) As Integer Implements IEqualityComparer(Of cmisProperty).GetHashCode
+            Return CInt(obj?.PropertyDefinitionId.GetHashCode())
+         End Function
+      End Class
+#End Region
    End Class
 End Namespace

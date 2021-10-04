@@ -223,7 +223,7 @@ Namespace CmisObjectModel.Client
                If Not String.IsNullOrEmpty(changeToken) Then _cmisObject.ChangeToken = changeToken
                Return True
             Else
-            Return False
+               Return False
             End If
          End With
       End Function
@@ -231,8 +231,6 @@ Namespace CmisObjectModel.Client
       ''' <summary>
       ''' Deletes the content stream for the specified document object
       ''' </summary>
-      ''' <returns></returns>
-      ''' <remarks></remarks>
       Public Function DeleteContentStream(Optional changeToken As String = Nothing) As cm.Responses.deleteContentStreamResponse
          With _client.DeleteContentStream(New cmr.deleteContentStream() With {.RepositoryId = _repositoryInfo.RepositoryId,
                                                                               .ObjectId = _cmisObject.ObjectId,
@@ -244,6 +242,18 @@ Namespace CmisObjectModel.Client
                Return Nothing
             End If
          End With
+      End Function
+
+      ''' <summary>
+      ''' Deletes the current object
+      ''' </summary>
+      Public Overrides Function DeleteObject(Optional allVersions As Boolean = True) As Boolean
+         Try
+            _onPWCRemovedPaused = True
+            Return MyBase.DeleteObject(allVersions)
+         Finally
+            _onPWCRemovedPaused = False
+         End Try
       End Function
 
       ''' <summary>
@@ -312,25 +322,28 @@ Namespace CmisObjectModel.Client
       ''' <remarks></remarks>
       Public Function CancelCheckOut(Optional pwcRequired As Boolean? = Nothing) As Boolean
          Dim objectOfLatestVersion As CmisDocument = GetObjectOfLatestVersion(filter:=String.Join(",", CmisPredefinedPropertyNames.Description, CmisPredefinedPropertyNames.ObjectId))
+         Dim cancelCheckOutFallbackId As String = Me.CancelCheckOutFallbackId
 
          Try
+            _onPWCRemovedPaused = True
             With _client.CancelCheckOut(New cmr.cancelCheckOut() With {.RepositoryId = _repositoryInfo.RepositoryId,
-                                                                    .ObjectId = _cmisObject.ObjectId,
-                                                                    .PWCLinkRequired = If(pwcRequired.HasValue, pwcRequired.Value,
-                                                                                          Not (IsPrivateWorkingCopy.HasValue AndAlso IsPrivateWorkingCopy.Value))})
+                                                                       .ObjectId = _cmisObject.ObjectId,
+                                                                       .PWCLinkRequired = If(pwcRequired.HasValue, pwcRequired.Value,
+                                                                                             Not (IsPrivateWorkingCopy.HasValue AndAlso IsPrivateWorkingCopy.Value))})
                _lastException = .Exception
                If _lastException Is Nothing Then
                   Dim isAdded As Boolean = String.IsNullOrEmpty(CancelCheckOutFallbackId)
                   Dim cmisObject As CmisObject = If(isAdded, Nothing, GetObject(CancelCheckOutFallbackId))
                   If TypeOf cmisObject Is CmisDocument Then
                      _cmisObject = cmisObject.Object
-                     CancelCheckOutFallbackId = Nothing
+                     Me.CancelCheckOutFallbackId = Nothing
                      Return True
                   End If
                End If
                Return False
             End With
          Finally
+            _onPWCRemovedPaused = False
             'remove complete versionseries if the CancelCheckOut belongs to a document created with versioningState checkedout
             If objectOfLatestVersion IsNot Nothing AndAlso
                If(objectOfLatestVersion.Description.Value, String.Empty).StartsWith(VersioningStateCheckedOutPrefix) Then
@@ -352,24 +365,29 @@ Namespace CmisObjectModel.Client
                               Optional addACEs As Core.Security.cmisAccessControlListType = Nothing,
                               Optional removeACEs As Core.Security.cmisAccessControlListType = Nothing,
                               Optional pwcRequired As Boolean? = Nothing) As Boolean
-         With _client.CheckIn(New cmr.checkIn() With {.RepositoryId = _repositoryInfo.RepositoryId,
-                                                      .ObjectId = _cmisObject.ObjectId,
-                                                      .Major = major, .Properties = properties, .ContentStream = contentStream,
-                                                      .CheckinComment = checkinComment, .Policies = policies, .AddACEs = addACEs,
-                                                      .RemoveACEs = removeACEs,
-                                                      .PWCLinkRequired = If(pwcRequired.HasValue, pwcRequired.Value,
-                                                                            Not (IsPrivateWorkingCopy.HasValue AndAlso IsPrivateWorkingCopy.Value))})
-            _lastException = .Exception
-            If _lastException Is Nothing Then
-               Dim cmisObject As CmisObject = GetObject(.Response.ObjectId)
-               If TypeOf cmisObject Is CmisDocument Then
-                  _cmisObject = cmisObject.Object
-                  CancelCheckOutFallbackId = Nothing
-                  Return True
+         Try
+            _onPWCRemovedPaused = True
+            With _client.CheckIn(New cmr.checkIn() With {.RepositoryId = _repositoryInfo.RepositoryId,
+                                                         .ObjectId = _cmisObject.ObjectId,
+                                                         .Major = major, .Properties = properties, .ContentStream = contentStream,
+                                                         .CheckinComment = checkinComment, .Policies = policies, .AddACEs = addACEs,
+                                                         .RemoveACEs = removeACEs,
+                                                         .PWCLinkRequired = If(pwcRequired.HasValue, pwcRequired.Value,
+                                                                               Not (IsPrivateWorkingCopy.HasValue AndAlso IsPrivateWorkingCopy.Value))})
+               _lastException = .Exception
+               If _lastException Is Nothing Then
+                  Dim cmisObject As CmisObject = GetObject(.Response.ObjectId)
+                  If TypeOf cmisObject Is CmisDocument Then
+                     _cmisObject = cmisObject.Object
+                     CancelCheckOutFallbackId = Nothing
+                     Return True
+                  End If
                End If
-            End If
-            Return False
-         End With
+               Return False
+            End With
+         Finally
+            _onPWCRemovedPaused = False
+         End Try
       End Function
 
       ''' <summary>
@@ -378,23 +396,36 @@ Namespace CmisObjectModel.Client
       ''' <returns></returns>
       ''' <remarks></remarks>
       Public Function CheckOut() As Boolean
-         If IsPrivateWorkingCopy.HasValue AndAlso IsPrivateWorkingCopy.Value Then
-            'already checked out
-            Return True
-         Else
-            With _client.CheckOut(New cmr.checkOut() With {.RepositoryId = _repositoryInfo.RepositoryId, .ObjectId = _cmisObject.ObjectId})
-               _lastException = .Exception
-               If _lastException Is Nothing Then
-                  Dim cmisObject As CmisObject = GetObject(.Response.ObjectId)
-                  If TypeOf cmisObject Is CmisDocument Then
-                     CancelCheckOutFallbackId = _cmisObject.ObjectId
-                     _cmisObject = cmisObject.Object
-                     Return True
-                  End If
+         Dim retVal As Boolean = False
+
+         Try
+            If IsPrivateWorkingCopy.HasValue AndAlso IsPrivateWorkingCopy.Value Then
+               If String.IsNullOrEmpty(CancelCheckOutFallbackId) Then
+                  Dim cmisObject As CmisObject = GetObjectOfLatestVersion()
+                  If TypeOf cmisObject Is CmisDocument Then CancelCheckOutFallbackId = cmisObject.ObjectId
                End If
-               Return False
-            End With
-         End If
+               'already checked out
+               retVal = True
+            Else
+               With _client.CheckOut(New cmr.checkOut() With {.RepositoryId = _repositoryInfo.RepositoryId, .ObjectId = _cmisObject.ObjectId})
+                  _lastException = .Exception
+                  If _lastException Is Nothing Then
+                     Dim cmisObject As CmisObject = GetObject(.Response.ObjectId)
+                     If TypeOf cmisObject Is CmisDocument Then
+                        CancelCheckOutFallbackId = _cmisObject.ObjectId
+                        _cmisObject = cmisObject.Object
+                        retVal = True
+                     End If
+                  End If
+               End With
+            End If
+         Finally
+            'this is a pwc; we have to install listeners, because another CmisDocument-instance or a low-level client request within this
+            'application might execute a checkIn or cancelCheckout
+            If retVal Then AddPWCRemovedListeners()
+         End Try
+
+         Return retVal
       End Function
 
       ''' <summary>
@@ -575,6 +606,14 @@ Namespace CmisObjectModel.Client
       End Property
 #End Region
 
+      ''' <summary>
+      ''' Bind to PWCRemovedListeners
+      ''' </summary>
+      Friend Sub AddPWCRemovedListeners()
+         _onPWCRemoved.AddPWCRemovedListeners(_onPWCRemovedListeners, _client.ServiceDocUri.AbsoluteUri,
+                                              _repositoryInfo.RepositoryId, _cmisObject.ObjectId)
+      End Sub
+
       Friend CancelCheckOutFallbackId As String
 
       Private Function Combine(propertiesCollections As Dictionary(Of String, Core.Properties.cmisProperty)(), propertyName As String,
@@ -638,6 +677,40 @@ Namespace CmisObjectModel.Client
       Public Shadows Function GetCheckedOut(cmisObject As Core.cmisObjectType) As Common.enumCheckedOutState
          Return MyBase.GetCheckedOut(cmisObject, _client)
       End Function
+
+      Private _onPWCRemoved As EventBus.WeakListenerCallback = AddressOf OnPWCRemoved
+      ''' <summary>
+      ''' Reverts the checkedout-state after the pwc has been cancelled, checked in or deleted
+      ''' </summary>
+      Protected Function OnPWCRemoved(e As EventBus.EventArgs) As EventBus.enumEventBusListenerResult
+         If Not _onPWCRemovedPaused Then
+            If String.Equals(e.EventName, EventBus.EndCheckIn) Then
+               Dim cmisObject As CmisObject = GetObject(e.NewObjectId)
+               If TypeOf cmisObject Is CmisDocument Then
+                  _cmisObject = cmisObject.Object
+               End If
+            ElseIf String.IsNullOrEmpty(CancelCheckOutFallbackId) Then
+               Dim cmisObject As CmisObject = GetObjectOfLatestVersion(acceptPWC:=enumCheckedOutState.checkedOutByMe)
+               If TypeOf cmisObject Is CmisDocument Then
+                  _cmisObject = cmisObject.Object
+               End If
+            Else
+               Dim cmisObject As CmisObject = GetObject(CancelCheckOutFallbackId)
+               If TypeOf cmisObject Is CmisDocument Then
+                  _cmisObject = cmisObject.Object
+               End If
+            End If
+         End If
+
+         CancelCheckOutFallbackId = Nothing
+
+         'remove the listeners, because the document stored in this object is not checkedout anymore
+         _onPWCRemoved.RemovePWCRemovedListeners(_onPWCRemovedListeners)
+
+         Return EventBus.enumEventBusListenerResult.success
+      End Function
+      Private _onPWCRemovedListeners As EventBus.WeakListener()
+      Private _onPWCRemovedPaused As Boolean = False
 
       Public Property RM_DestructionRetention As DateTimeOffset?
          Get

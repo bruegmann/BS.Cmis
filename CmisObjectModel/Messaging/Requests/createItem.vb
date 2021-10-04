@@ -152,7 +152,7 @@ Namespace CmisObjectModel.Messaging.Requests
          If value Is Nothing OrElse value._properties Is Nothing Then
             Return Nothing
          Else
-            Dim cmisraObject As New Core.cmisObjectType(value._properties.Properties)
+            Dim cmisraObject As New Core.cmisObjectType(value._properties)
             Dim policies As String() = value.Policies
 
             'missing property Policies defined in 2.2.4.6 createItem, but not defined in CMIS-Messaging.xsd

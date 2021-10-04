@@ -57,7 +57,7 @@ Namespace CmisObjectModel.Messaging.Requests
          If value Is Nothing OrElse value._properties Is Nothing Then
             Return Nothing
          Else
-            Dim cmisraObject As New Core.cmisObjectType(value._properties.Properties)
+            Dim cmisraObject As New Core.cmisObjectType(value._properties)
 
             Return New AtomPub.AtomEntry(cmisraObject)
          End If

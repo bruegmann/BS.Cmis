@@ -11,7 +11,7 @@
     <AssemblyName>RunServer</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Console</MyType>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -56,6 +56,10 @@
     <ApplicationIcon>cmis.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BS.Cmis, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BS.Cmis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -124,10 +128,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CmisObjectModel\CmisObjectModel.vbproj">
-      <Project>{1e902b05-c6d4-4a39-bd2f-97863f9e8480}</Project>
-      <Name>CmisObjectModel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CmisServer\CmisServer.vbproj">
       <Project>{a61b1ec2-14f8-4c53-b853-d527d71e4a89}</Project>
       <Name>CmisServer</Name>

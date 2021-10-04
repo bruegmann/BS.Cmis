@@ -468,7 +468,7 @@ Namespace CmisObjectModel.Common
       Public Function IsMajorVersion(Optional localName As String = Constants.CmisPredefinedPropertyNames.IsMajorVersion,
                                      Optional queryName As String = Constants.CmisPredefinedPropertyNames.IsMajorVersion,
                                      Optional orderable As Boolean = True) As ccdp.cmisPropertyDefinitionType
-         Return PropertyBooleanDefinition(Constants.CmisPredefinedPropertyNames.IsLatestMajorVersion, localName,
+         Return PropertyBooleanDefinition(Constants.CmisPredefinedPropertyNames.IsMajorVersion, localName,
                                           "TRUE if the version designated as a major version", queryName,
                                           False, orderable, Core.enumCardinality.single, Core.enumUpdatability.readonly)
       End Function

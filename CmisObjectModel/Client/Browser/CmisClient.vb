@@ -1045,13 +1045,17 @@ Namespace CmisObjectModel.Client.Browser
       Public Overrides Function DeleteObject(request As Messaging.Requests.deleteObject) As Generic.Response(Of Messaging.Responses.deleteObjectResponse)
          With GetRepositoryInfo(request.RepositoryId, request.BrowserBinding.Token)
             If .Exception Is Nothing Then
+               Dim e = EventBus.EventArgs.DispatchBeginEvent(Me, Nothing, ServiceDocUri.AbsoluteUri, request.RepositoryId, EventBus.enumBuiltInEvents.DeleteObject, request.ObjectId)
                Dim content As New JSON.MultipartFormDataContent(MediaTypes.UrlEncodedUTF8, "delete")
 
                If request.AllVersions.HasValue Then content.Add("allVersions", Convert(request.AllVersions.Value))
                Dim result = Me.Post(New UriBuilder(.Response.RootFolderUrl, request, "objectId", request.ObjectId, True), content, Nothing)
                If result.Exception Is Nothing Then
+                  e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, True}})
                   Return New Messaging.Responses.deleteObjectResponse()
                Else
+                  e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, False},
+                                                                               {EventBus.EventArgs.PredefinedPropertyNames.Failure, result.Exception}})
                   Return result.Exception
                End If
             Else
@@ -1489,11 +1493,15 @@ Namespace CmisObjectModel.Client.Browser
       Public Overrides Function CancelCheckOut(request As Messaging.Requests.cancelCheckOut) As Generic.Response(Of Messaging.Responses.cancelCheckOutResponse)
          With GetRepositoryInfo(request.RepositoryId, request.BrowserBinding.Token)
             If .Exception Is Nothing Then
+               Dim e = EventBus.EventArgs.DispatchBeginEvent(Me, Nothing, ServiceDocUri.AbsoluteUri, request.RepositoryId, EventBus.enumBuiltInEvents.CancelCheckout, request.ObjectId)
                Dim content As New JSON.MultipartFormDataContent(MediaTypes.UrlEncodedUTF8, "cancelCheckOut", request)
                Dim result = Me.Post(New UriBuilder(.Response.RootFolderUrl, request, "objectId", request.ObjectId, True), content, Nothing)
                If result.Exception Is Nothing Then
+                  e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, True}})
                   Return New Messaging.Responses.cancelCheckOutResponse()
                Else
+                  e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, False},
+                                                                               {EventBus.EventArgs.PredefinedPropertyNames.Failure, result.Exception}})
                   Return result.Exception
                End If
             Else
@@ -1508,6 +1516,7 @@ Namespace CmisObjectModel.Client.Browser
       Public Overrides Function CheckIn(request As Messaging.Requests.checkIn) As Generic.Response(Of Messaging.Responses.checkInResponse)
          With GetRepositoryInfo(request.RepositoryId, request.BrowserBinding.Token)
             If .Exception Is Nothing Then
+               Dim e = EventBus.EventArgs.DispatchBeginEvent(Me, Nothing, ServiceDocUri.AbsoluteUri, request.RepositoryId, EventBus.enumBuiltInEvents.CheckIn, request.ObjectId)
                Dim content As New JSON.MultipartFormDataContent(MediaTypes.MultipartFormData, "checkIn", request)
                Dim state As Vendors.Vendor.State = TransformRequest(request.RepositoryId, request.Properties)
 
@@ -1520,8 +1529,12 @@ Namespace CmisObjectModel.Client.Browser
                                        request.BrowserBinding.Succinct)
                   If result.Exception Is Nothing Then
                      TransformResponse(result.Response, New State(request.RepositoryId, request.BrowserBinding.Succinct))
+                     e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, True},
+                                                                                  {EventBus.EventArgs.PredefinedPropertyNames.NewObjectId, result.Response.ObjectId.Value}})
                      Return New Messaging.Responses.checkInResponse() With {.Object = result.Response}
                   Else
+                     e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, False},
+                                                                                  {EventBus.EventArgs.PredefinedPropertyNames.Failure, result.Exception}})
                      Return result.Exception
                   End If
                Finally
@@ -1812,6 +1825,7 @@ Namespace CmisObjectModel.Client.Browser
          Dim uri As New Uri(ServiceURIs.GetServiceUri(_serviceDocUri.OriginalString,
                                                       ServiceURIs.enumRepositoriesUri.repositoryId Or ServiceURIs.enumRepositoriesUri.logout).ReplaceUri("repositoryId", repositoryId, "logout", "true"))
          Me.Post(uri, content, Nothing)
+         RepositoryInfo(repositoryId) = Nothing
       End Sub
 
       ''' <summary>

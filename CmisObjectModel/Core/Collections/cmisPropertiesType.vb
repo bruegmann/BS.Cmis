@@ -33,7 +33,7 @@ Namespace CmisObjectModel.Core.Collections
       Implements IEnumerable
 
       Public Sub New(ParamArray properties As Core.Properties.cmisProperty())
-         _properties = properties
+         _properties = New HashSet(Of Properties.cmisProperty)(properties, _equalityComparer)
       End Sub
 
       Public Shared Widening Operator CType(value As List(Of Core.Properties.cmisProperty)) As cmisPropertiesType
@@ -62,7 +62,7 @@ Namespace CmisObjectModel.Core.Collections
 
 #Region "IEnumerable"
       Public Function GetEnumerator() As System.Collections.IEnumerator Implements System.Collections.IEnumerable.GetEnumerator
-         Return If(_properties, New Core.Properties.cmisProperty() {}).GetEnumerator()
+         Return _properties.GetEnumerator()
       End Function
 #End Region
 
@@ -93,20 +93,9 @@ Namespace CmisObjectModel.Core.Collections
       ''' </summary>
       ''' <param name="cmisProperty"></param>
       ''' <remarks></remarks>
-      Public Sub Append(cmisProperty As Core.Properties.cmisProperty)
-         If cmisProperty IsNot Nothing Then
-            If _properties Is Nothing Then
-               Me.Properties = New Core.Properties.cmisProperty() {cmisProperty}
-            Else
-               Dim length As Integer = _properties.Length
-               Dim properties As Core.Properties.cmisProperty() = CType(Array.CreateInstance(GetType(Core.Properties.cmisProperty), length + 1), Core.Properties.cmisProperty())
-
-               Array.Copy(_properties, properties, length)
-               properties(length) = cmisProperty
-               Me.Properties = properties
-            End If
-         End If
-      End Sub
+      Public Function Append(cmisProperty As Core.Properties.cmisProperty) As Boolean
+         Return AddProperty(cmisProperty)
+      End Function
 
       ''' <summary>
       ''' Updates the entries of result: if a key exists in the properties-collection the corresponding property
@@ -154,7 +143,7 @@ Namespace CmisObjectModel.Core.Collections
       ''' <remarks></remarks>
       Public ReadOnly Property Count As Integer
          Get
-            Return If(_properties Is Nothing, 0, _properties.Length)
+            Return _properties.Count
          End Get
       End Property
 
@@ -305,7 +294,7 @@ Namespace CmisObjectModel.Core.Collections
       End Function
 
       Private _propertiesAsReadOnly As New ccg.ArrayMapper(Of cmisPropertiesType, Core.Properties.cmisProperty)(Me,
-                                                                                                                "Properties", Function() _properties,
+                                                                                                                "Properties", Function() _properties.ToArray(),
                                                                                                                 "PropertyDefinitionId", Function([property]) [property].PropertyDefinitionId)
       ''' <summary>
       ''' Access to properties via index or PropertyDefinitionId

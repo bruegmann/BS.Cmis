@@ -1449,8 +1449,16 @@ Namespace CmisObjectModel.Client.AtomPub
             If .Exception Is Nothing Then
                With New ccg.LinkUriBuilder(Of ServiceURIs.enumObjectUri)(.Response, repositoryId)
                   .Add(ServiceURIs.enumObjectUri.allVersions, allVersions)
+                  Dim e = EventBus.EventArgs.DispatchBeginEvent(Me, Nothing, ServiceDocUri.AbsoluteUri, repositoryId, EventBus.enumBuiltInEvents.DeleteObject, objectId)
+                  Dim retVal = Delete(.ToUri())
 
-                  Return Delete(.ToUri())
+                  If retVal.Exception Is Nothing Then
+                     e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, True}})
+                  Else
+                     e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, False},
+                                                                                  {EventBus.EventArgs.PredefinedPropertyNames.Failure, retVal.Exception}})
+                  End If
+                  Return retVal
                End With
             Else
                Return .Exception
@@ -2304,10 +2312,21 @@ Namespace CmisObjectModel.Client.AtomPub
          With GetLink(repositoryId, objectId, LinkRelationshipTypes.WorkingCopy, MediaTypes.Entry, _objectLinks, Nothing)
             If .Exception Is Nothing Then
                link = .Response
+            ElseIf link Is Nothing Then
+               Return .Exception
             End If
          End With
 
-         Return Delete(New Uri(link))
+         Dim e = EventBus.EventArgs.DispatchBeginEvent(Me, Nothing, ServiceDocUri.AbsoluteUri, repositoryId, EventBus.enumBuiltInEvents.CancelCheckout, objectId)
+         Dim retVal = Delete(New Uri(link))
+
+         If retVal.Exception Is Nothing Then
+            e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, True}})
+         Else
+            e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, False},
+                                                                         {EventBus.EventArgs.PredefinedPropertyNames.Failure, retVal.Exception}})
+         End If
+         Return retVal
       End Function
       ''' <summary>
       ''' Reverses the effect of a check-out (checkOut). Removes the Private Working Copy of the checked-out document, allowing other documents
@@ -2391,11 +2410,17 @@ Namespace CmisObjectModel.Client.AtomPub
                   content = Nothing
                End If
 
+               Dim e = EventBus.EventArgs.DispatchBeginEvent(Me, Nothing, ServiceDocUri.AbsoluteUri, repositoryId, EventBus.enumBuiltInEvents.CheckIn, objectId)
                Dim retVal As Generic.Response(Of ca.AtomEntry) = Put(.ToUri(), New sss.Atom10ItemFormatter(New ca.AtomEntry(cmisraObject, content)),
                                                                      MediaTypes.Entry, headers, AddressOf ca.AtomEntry.CreateInstance)
                If retVal.Exception Is Nothing Then
                   TransformResponse(retVal, state)
+                  e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, True},
+                                                                               {EventBus.EventArgs.PredefinedPropertyNames.NewObjectId, retVal.Response.ObjectId}})
                   If Not (addACEs Is Nothing OrElse removeACEs Is Nothing) Then ApplyAcl(repositoryId, retVal.Response.ObjectId, addACEs, removeACEs)
+               Else
+                  e.DispatchEndEvent(New Dictionary(Of String, Object)() From {{EventBus.EventArgs.PredefinedPropertyNames.Succeeded, False},
+                                                                               {EventBus.EventArgs.PredefinedPropertyNames.Failure, retVal.Exception}})
                End If
                Return retVal
             Finally
@@ -2879,6 +2904,7 @@ Namespace CmisObjectModel.Client.AtomPub
          Dim uri As New Uri(ServiceURIs.GetServiceUri(_serviceDocUri.OriginalString,
                                                       ServiceURIs.enumRepositoriesUri.repositoryId Or ServiceURIs.enumRepositoriesUri.logout).ReplaceUri("repositoryId", repositoryId, "logout", "true"))
          Me.Get(uri)
+         RepositoryInfo(repositoryId) = Nothing
       End Sub
 
       ''' <summary>
@@ -3041,7 +3067,7 @@ Namespace CmisObjectModel.Client.AtomPub
          Dim link As String
 
          'try to get the object and fill the link-cache with object-links
-         With GetRepositoryInfo(repositoryId)
+         With GetRepositoryInfo(repositoryId, ignoreCache:=True)
             If .Exception Is Nothing Then
                link = .Response.Link(relationshipType)
             Else

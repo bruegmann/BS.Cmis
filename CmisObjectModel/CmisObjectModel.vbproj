@@ -14,7 +14,7 @@
     <AssemblyName>BS.Cmis</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -406,6 +406,11 @@
     <Compile Include="Data\Mapper.vb" />
     <Compile Include="Data\MapperDictionary.vb" />
     <Compile Include="Data\PropertyValueConverter.vb" />
+    <Compile Include="EventBus\Backbone.vb" />
+    <Compile Include="EventBus\Enums.vb" />
+    <Compile Include="EventBus\EventArgs.vb" />
+    <Compile Include="EventBus\BuildInEventNames.vb" />
+    <Compile Include="EventBus\WeakListener.vb" />
     <Compile Include="Extensions\Alfresco\Aspects.vb" />
     <Compile Include="Extensions\Alfresco\MandatoryAspects.vb" />
     <Compile Include="Extensions\Alfresco\SetAspects.vb" />
@@ -1131,8 +1136,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>Call ..\..\..\..\Shared\References\BinCopy.bat $(ConfigurationName) $(TargetPath)   ..\..\..\..\Shared\References</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -772,7 +772,7 @@ Namespace CmisObjectModel.Common
             ''' Expression for current UTC-time
             ''' </summary>
             ''' <remarks></remarks>
-            Public Const NextChangeTokenExpression As String = "To_Char(SysTimestamp-(SubStr(tz_offset(dbTimezone), 1, 1) || '1') * To_dsInterval('0 ' || substr(tz_offset(dbTimezone), 2, 5) || ':00'),'YYYYMMDDHH24MISSFF')"
+            Public Const NextChangeTokenExpression As String = "To_Char(sys_extract_utc(systimestamp),'YYYYMMDDHH24MISSFF')"
          End Class
          Public Shared ReadOnly Property NextChangeToken As String
             Get
@@ -913,6 +913,42 @@ Namespace CmisObjectModel.Common
 
          Return retVal
       End Function
+#End Region
+
+#Region "PWCRemovedHandler-Support"
+      ''' <summary>
+      ''' Creates WeakListeners to detect the end of a checkedOut-state.
+      ''' </summary>
+      <src.Extension()>
+      Public Sub AddPWCRemovedListeners(handler As EventBus.WeakListenerCallback, ByRef listeners As EventBus.WeakListener(),
+                                        absoluteUri As String, repositoryId As String, pwcId As String)
+         Dim eventNames As String() = New String() {EventBus.EndCancelCheckout, EventBus.EndCheckIn, EventBus.EndDeleteObject}
+         Dim length As Integer = eventNames.Length
+
+         SyncLock handler
+            RemovePWCRemovedListeners(handler, listeners)
+            listeners = DirectCast(System.Array.CreateInstance(GetType(EventBus.WeakListener), length), EventBus.WeakListener())
+            For index As Integer = 0 To length - 1
+               listeners(index) = EventBus.WeakListener.CreateInstance(handler, absoluteUri, repositoryId, eventNames(index), pwcId)
+            Next
+         End SyncLock
+      End Sub
+
+      ''' <summary>
+      ''' Releases listeners
+      ''' </summary>
+      <src.Extension()>
+      Public Sub RemovePWCRemovedListeners(handler As EventBus.WeakListenerCallback, ByRef listeners As EventBus.WeakListener())
+         SyncLock handler
+            If listeners IsNot Nothing Then
+               For index As Integer = 0 To listeners.Length - 1
+                  Dim listener As EventBus.WeakListener = listeners(index)
+                  If listener IsNot Nothing Then listener.RemoveListener()
+               Next
+               listeners = Nothing
+            End If
+         End SyncLock
+      End Sub
 #End Region
 
       ''' <summary>

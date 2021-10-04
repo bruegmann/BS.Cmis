@@ -352,9 +352,7 @@ Namespace CmisObjectModel.Client
       ''' <summary>
       ''' Deletes the current object
       ''' </summary>
-      ''' <returns></returns>
-      ''' <remarks></remarks>
-      Public Function DeleteObject(Optional allVersions As Boolean = True) As Boolean
+      Public Overridable Function DeleteObject(Optional allVersions As Boolean = True) As Boolean
          With _client.DeleteObject(New cmr.deleteObject() With {.RepositoryId = _repositoryInfo.RepositoryId, .ObjectId = _cmisObject.ObjectId, .AllVersions = allVersions})
             _lastException = .Exception
             Return _lastException Is Nothing

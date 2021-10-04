@@ -77,7 +77,7 @@ Namespace CmisObjectModel.Client
       ''' Returns the workspace of specified repository or null
       ''' </summary>
       Public Function GetRepositoryInfo(repositoryId As String) As CmisRepository
-         Dim result = _client.GetRepositoryInfo(New Messaging.Requests.getRepositoryInfo() With {.RepositoryId = repositoryId})
+         Dim result = _client.GetRepositoryInfo(New Messaging.Requests.getRepositoryInfo() With {.RepositoryId = repositoryId}, True)
 
          _lastException = result.Exception
          Return If(_lastException Is Nothing AndAlso result.Response IsNot Nothing, CreateCmisRepository(result.Response.RepositoryInfo), Nothing)

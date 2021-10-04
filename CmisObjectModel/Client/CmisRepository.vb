@@ -361,6 +361,12 @@ Namespace CmisObjectModel.Client
                                      Optional includeAllowableActions As Boolean? = Nothing) As CmisDocument
          Dim document As CmisDocument = GetObject(Of CmisDocument)(objectId, String.Join(",", CmisPredefinedPropertyNames.VersionSeriesId,
                                                                                               CmisPredefinedPropertyNames.IsPrivateWorkingCopy))
+
+         'GetObject mit Filterangabe führt bei AGORUM zu keinem Ergebnis. Deshalb hier nochmal ohne Filter anfragen, wenn document Nothing ist. Siehe #7522.
+         If document Is Nothing Then
+            document = GetObject(Of CmisDocument)(objectId)
+         End If
+
          Dim isPrivateWorkingCopy As Boolean? = If(document Is Nothing, Nothing, document.IsPrivateWorkingCopy)
 
          With _client.CancelCheckOut(New cmr.cancelCheckOut() With {.RepositoryId = _repositoryInfo.RepositoryId,
